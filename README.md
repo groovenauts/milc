@@ -1,5 +1,8 @@
 # Milc
 
+[![Gem Version](https://badge.fury.io/rb/milc.png)](https://rubygems.org/gems/milc)
+[![Build Status](https://travis-ci.org/groovenauts/milc.svg?branch=master)](https://travis-ci.org/groovenauts/milc)
+
 Milc means "Magellan Infrastructure Library and Command".
 
 This gem supports portability from command to ruby library in order to realize automated orchestration.
