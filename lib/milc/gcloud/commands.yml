@@ -1,0 +1,213 @@
+compute:
+  addresses:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+  backend-services:
+    commands:
+      - add-backend
+      - create
+      - delete
+      - describe
+      - edit
+      - get-health
+      - list
+      - remove-backend
+      - update
+      - update-backend
+  disk-types:
+    commands:
+      - describe
+      - list
+  disks:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+      - snapshot
+  firewall-rules:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+      - update
+  forwarding-rules:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+      - set-target
+  http-health-checks:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+      - update
+  images:
+    commands:
+      - create
+      - delete
+      - deprecate
+      - describe
+      - list
+  instance-templates:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+  instances:
+    commands:
+      - add-access-config
+      - add-metadata
+      - add-tags
+      - attach-disk
+      - create
+      - delete
+      - delete-access-config
+      - describe
+      - detach-disk
+      - get-serial-port-output
+      - list
+      - remove-metadata
+      - remove-tags
+      - reset
+      - set-disk-auto-delete
+      - set-scheduling
+  machine-types:
+    commands:
+      - describe
+      - list
+  networks:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+  operations:
+    commands:
+      - describe
+      - list
+  project-info:
+    commands:
+      - add-metadata
+      - describe
+      - remove-metadata
+      - set-usage-bucket
+  regions:
+    commands:
+      - describe
+      - list
+  routes:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+  snapshots:
+    commands:
+      - delete
+      - describe
+      - list
+  target-http-proxies:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+      - update
+  target-instances:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+  target-pools:
+    commands:
+      - add-health-checks
+      - add-instances
+      - create
+      - delete
+      - describe
+      - get-health
+      - list
+      - remove-health-checks
+      - remove-instances
+      - set-backup
+  url-maps:
+    commands:
+      - add-host-rule
+      - add-path-matcher
+      - create
+      - delete
+      - describe
+      - edit
+      - list
+      - remove-host-rule
+      - remove-path-matcher
+      - set-default-service
+  zones:
+    commands:
+      - describe
+      - list
+sql:
+  backups:
+    commands:
+      - describe
+      - list
+  flags:
+    commands:
+      - list
+  instances:
+    commands:
+      - clone
+      - create
+      - delete
+      - describe
+      - export
+      - import
+      - list
+      - patch
+      - promote-replica
+      - reset-ssl-config
+      - restart
+      - restore-backup
+      - set-root-password
+  operations:
+    commands:
+      - describe
+      - list
+      - wait
+  ssl-certs:
+    commands:
+      - create
+      - delete
+      - describe
+      - list
+  tiers:
+    commands:
+      - list
+dns:
+  changes:
+    commands:
+      - get
+      - list
+  managed-zone:
+    commands:
+      - create
+      - delete
+      - get
+      - list
+  project-info:
+    commands:
+      - get
+  records:
+    commands:
+      - edit
+      - list
