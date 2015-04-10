@@ -2,6 +2,8 @@
 require 'spec_helper'
 
 describe Milc::Base do
+  let(:query_options){ {returns: :stdout, logging: :stderr} }
+  let(:ope_options){ {returns: :none, logging: :both} }
 
   CONFIG_PATH = File.expand_path("../sample.yml", __FILE__)
   CONFIG      = YAML.load_file(CONFIG_PATH)
@@ -90,13 +92,13 @@ describe Milc::Base do
     subject{ MgcloudSample.new }
     let(:create_arg_ptn){ %r!gcloud compute networks create #{network1_name}\s+--range \"10.0.0.0\/8\"\s+--format json\s+--project #{project}! }
     it "when not created yet" do
-      expect(LoggerPipe).to receive(:run).with(Milc.logger, find_arg_ptn  , dry_run: be_falsey).and_return([].to_json)
-      expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn, dry_run: be_falsey).and_return([].to_json)
+      expect(LoggerPipe).to receive(:run).with(Milc.logger, find_arg_ptn  , query_options.merge(dry_run: be_falsey)).and_return([].to_json)
+      expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn,   ope_options.merge(dry_run: be_falsey)).and_return([].to_json)
       subject.run(["-c", CONFIG_PATH])
     end
     it "when already created" do
-      expect(LoggerPipe).to     receive(:run).with(Milc.logger, find_arg_ptn, dry_run: be_falsey).and_return([network1_res].to_json)
-      expect(LoggerPipe).to_not receive(:run).with(Milc.logger, /gcloud compute networks create/, dry_run: be_falsey)
+      expect(LoggerPipe).to     receive(:run).with(Milc.logger, find_arg_ptn, query_options.merge(dry_run: be_falsey)).and_return([network1_res].to_json)
+      expect(LoggerPipe).to_not receive(:run).with(Milc.logger, /gcloud compute networks create/, ope_options.merge(dry_run: be_falsey))
       subject.run(["-c", CONFIG_PATH])
     end
   end
@@ -105,7 +107,7 @@ describe Milc::Base do
     subject{ GcloudSample.new }
     let(:create_arg_ptn){ %r!gcloud compute networks create #{network1_name}\s+--range \"10.0.0.0\/8\"\s+--project #{project}! }
     it do
-      expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn, dry_run: be_falsey)
+      expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn, ope_options.merge(dry_run: be_falsey))
       subject.run(["-c", CONFIG_PATH])
     end
   end
@@ -114,7 +116,7 @@ describe Milc::Base do
     subject{ JsonGcloudSample.new }
     let(:create_arg_ptn){ %r!gcloud compute networks create #{network1_name}\s+--range \"10.0.0.0\/8\"\s+--format json\s+--project #{project}! }
     it do
-      expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn, dry_run: be_falsey)
+      expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn, query_options.merge(dry_run: be_falsey))
       subject.run(["-c", CONFIG_PATH])
     end
   end
@@ -122,7 +124,7 @@ describe Milc::Base do
   describe :ansible_playbook do
     subject{ AnsibleSample.new }
     it do
-      expect(LoggerPipe).to receive(:run).with(Milc.logger, /ansible-playbook -i inventory_filename config.yml/, dry_run: be_falsey)
+      expect(LoggerPipe).to receive(:run).with(Milc.logger, /ansible-playbook -i inventory_filename config.yml/, ope_options.merge(dry_run: be_falsey))
       subject.run(["-c", CONFIG_PATH])
     end
   end

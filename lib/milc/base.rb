@@ -28,8 +28,9 @@ module Milc
       Milc.logger
     end
 
-    def execute(cmd)
-      res = LoggerPipe.run(logger, cmd, dry_run: Milc.dry_run)
+    def execute(cmd, options = {})
+      options[:dry_run] = Milc.dry_run
+      res = LoggerPipe.run(logger, cmd, options)
       block_given? ? yield(res) : res
     end
 
