@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Milc::Gcloud::Compute::TargetPools do
+  let(:query_options){ {returns: :stdout, logging: :stderr} }
+  let(:ope_options){ {returns: :none, logging: :both} }
 
   let(:project){ "dummy-ghost-333" }
   let(:network1_name) { "network-sandbox99" }
@@ -29,19 +31,19 @@ describe Milc::Gcloud::Compute::TargetPools do
     subject{ Milc::Gcloud::Resource.lookup(project, :compute, "target-pools") }
     describe :find do
       it "found" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([target_pool1_res].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([target_pool1_res].to_json)
         r = subject.find(network1_name)
         expect(r).to eq target_pool1_res
       end
 
       it "not found" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
         r = subject.find(network1_name)
         expect(r).to be_nil
       end
 
       it "using logger_pipe" do
-        expect(LoggerPipe).to receive(:run).with(Milc.logger, find_arg_ptn, dry_run: be_falsey).and_return([target_pool1_res].to_json)
+        expect(LoggerPipe).to receive(:run).with(Milc.logger, find_arg_ptn, query_options.merge(dry_run: be_falsey)).and_return([target_pool1_res].to_json)
         r = subject.find(network1_name)
         expect(r).to eq target_pool1_res
       end
@@ -50,13 +52,13 @@ describe Milc::Gcloud::Compute::TargetPools do
     describe :create do
       let(:create_arg_ptn){ %r!gcloud compute target-pools create #{network1_name}\s+--range \"10.0.0.0\/8\"\s+--format json\s+--project #{project}! }
       it "when not created yet" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
-        expect(Milc::Gcloud.backend).to receive(:execute).with(create_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(create_arg_ptn, ope_options).and_return([].to_json)
         subject.create(network1_name, range: "\"10.0.0.0/8\"")
       end
       it "when already created" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([target_pool1_res].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute target-pools create/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([target_pool1_res].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute target-pools create/, ope_options)
         subject.create(network1_name, range: "\"10.0.0.0/8\"")
       end
     end
@@ -72,13 +74,13 @@ describe Milc::Gcloud::Compute::TargetPools do
     describe :delete do
       let(:delete_arg_ptn){ %r!gcloud compute target-pools delete #{network1_name}\s+--format json\s+--project #{project}! }
       it "when not created yet" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute target-pools delete/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute target-pools delete/, ope_options)
         subject.delete(network1_name, range: "\"10.0.0.0/8\"")
       end
       it "when already created" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([target_pool1_res].to_json)
-        expect(Milc::Gcloud.backend).to receive(:execute).with(delete_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([target_pool1_res].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(delete_arg_ptn, ope_options).and_return([].to_json)
         subject.delete(network1_name)
       end
     end
@@ -87,7 +89,7 @@ describe Milc::Gcloud::Compute::TargetPools do
       let(:delete_arg_ptn){  }
       it "when already created" do
         ptn = /gcloud compute target-pools add-instances #{target_pool1_name} --instances rp01 --zone asia-east1-c\s+--format json\s+--project #{project}/ 
-        expect(Milc::Gcloud.backend).to receive(:execute).with(ptn)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(ptn, ope_options)
        subject.add_instances(target_pool1_name, instances: "rp01", zone: "asia-east1-c")
       end
     end

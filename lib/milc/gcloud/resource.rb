@@ -48,10 +48,10 @@ module Milc
         @commands = commands || []
       end
 
-      def __gcloud(cmd, &block)
+      def __gcloud(cmd, options = {}, &block)
         c = "gcloud #{cmd} --format json"
         c << " --project #{project}" unless c =~ /\s\-\-project[\s\=]/
-        res = Gcloud.backend.execute(c, &block)
+        res = Gcloud.backend.execute(c, options, &block)
         res ? JSON.parse(res) : nil
       end
 
@@ -69,7 +69,11 @@ module Milc
 
       def call_action(action, cmd_args, attrs = nil, &block)
         attr_args = attrs.nil? ? '' : build_attr_args(attrs)
-        __gcloud("#{service} #{resource} #{action} #{cmd_args} #{attr_args}", &block)
+        options =
+          action =~ /\Alist|\Adescribe|\Aget/ ?
+            {returns: :stdout, logging: :stderr} :
+            {returns: :none  , logging: :both}
+        __gcloud("#{service} #{resource} #{action} #{cmd_args} #{attr_args}", options, &block)
       end
 
       def call_update(cmd_args, attrs, &block)

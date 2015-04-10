@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe "compute instances" do
+  let(:query_options){ {returns: :stdout, logging: :stderr} }
+  let(:ope_options){ {returns: :none, logging: :both} }
 
   let(:project){ "dummy-ghost-333" }
   let(:env_name) { "sandbox99" }
@@ -88,13 +90,13 @@ describe "compute instances" do
     subject{ Milc::Gcloud::Resource.lookup(project, :compute, :instances) }
     describe :find do
       it "found" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([vm1_res].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([vm1_res].to_json)
         r = subject.find(vm1_name)
         expect(r).to eq vm1_res
       end
 
       it "not found" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
         r = subject.find(vm1_name)
         expect(r).to be_nil
       end
@@ -115,13 +117,13 @@ describe "compute instances" do
       # gcloud compute instances create #{env_name}-trdb01 --disk name=#{env_name}-trdb01 device-name=#{env_name}-trdb01 mode=rw boot=yes --disk name=data-#{env_name}-trdb01 device-name=data-#{env_name}-trdb01 mode=rw boot=no --zone asia-east1-c --machine-type n1-standard-4 --scopes bigquery --network network-#{env_name} --tags trdb #{env_name}  --format json --project #{project}
       let(:create_arg_ptn){ %r!gcloud compute instances create #{vm1_name}\s+--disk name=#{env_name}-trdb01 device-name=#{env_name}-trdb01 mode=rw boot=yes --disk name=data-#{env_name}-trdb01 device-name=data-#{env_name}-trdb01 mode=rw boot=no --zone asia-east1-c --machine-type n1-standard-4 --scopes bigquery --network network-#{env_name} --tags trdb #{env_name}\s+--format json\s+--project #{project}! }
       it "when not created yet" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
-        expect(Milc::Gcloud.backend).to receive(:execute).with(create_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(create_arg_ptn, ope_options).and_return([].to_json)
         subject.create(vm1_name, vm_args)
       end
       it "when already created" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([vm1_res].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute instances create/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([vm1_res].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute instances create/, ope_options)
         subject.create(vm1_name, vm_args)
       end
     end
@@ -137,13 +139,13 @@ describe "compute instances" do
     describe :delete do
       let(:delete_arg_ptn){ %r!gcloud compute instances delete #{vm1_name}\s+--format json\s+--project #{project}! }
       it "when not created yet" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute instances delete/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute instances delete/, ope_options)
         subject.delete(vm1_name)
       end
       it "when already created" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([vm1_res].to_json)
-        expect(Milc::Gcloud.backend).to receive(:execute).with(delete_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([vm1_res].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(delete_arg_ptn, ope_options).and_return([].to_json)
         subject.delete(vm1_name)
       end
     end

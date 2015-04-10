@@ -1,6 +1,8 @@
 require 'spec_helper'
 
 describe Milc::Gcloud::Compute::FirewallRules do
+  let(:query_options){ {returns: :stdout, logging: :stderr} }
+  let(:ope_options){ {returns: :none, logging: :both} }
 
   let(:project){ "dummy-ghost-333" }
   let(:network1_name) { "network-sandbox99" }
@@ -37,13 +39,13 @@ describe Milc::Gcloud::Compute::FirewallRules do
     subject{ Milc::Gcloud::Resource.lookup(project, :compute, :"firewall-rules") }
     describe :find do
       it "found" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([fw1_res].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([fw1_res].to_json)
         r = subject.find(fw1_name)
         expect(r).to eq fw1_res
       end
 
       it "not found" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
         r = subject.find(fw1_name)
         expect(r).to be_nil
       end
@@ -52,31 +54,31 @@ describe Milc::Gcloud::Compute::FirewallRules do
     describe :create do
       let(:create_arg_ptn){ %r!gcloud compute firewall-rules create #{fw1_name}\s+--allow tcp:5672 --source-ranges 0.0.0.0 --target-tags trmq\s+--format json\s+--project #{project}! }
       it "when not created yet" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
-        expect(Milc::Gcloud.backend).to receive(:execute).with(create_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(create_arg_ptn, ope_options).and_return([].to_json)
         subject.create(fw1_name, allow: "tcp:5672", source_ranges: "0.0.0.0", target_tags: "trmq")
       end
       it "when already created" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([fw1_res].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([fw1_res].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/, ope_options)
         subject.create(fw1_name, allow: "tcp:5672", source_ranges: "0.0.0.0", target_tags: "trmq")
       end
       it "when already created but updated" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).
                                          and_return([fw1_res.merge("sourceRanges" => "10.0.0.0/8")].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/, ope_options)
         update_arg_ptn = %r!gcloud compute firewall-rules update #{fw1_name}\s+--allow tcp:5672 --source-ranges 0.0.0.0 --target-tags trmq\s+--format json\s+--project #{project}!
-        expect(Milc::Gcloud.backend).to receive(:execute).with(update_arg_ptn)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(update_arg_ptn, ope_options)
         subject.create(fw1_name, allow: "tcp:5672", source_ranges: "0.0.0.0", target_tags: "trmq")
       end
 
       it "when already created but updated with icmp" do
         allowed = [{"IPProtocol" => "icmp"}]
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).
                                          and_return([fw1_res.merge("sourceRanges" => "10.0.0.0/8", "allowed" => allowed)].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/, ope_options)
         update_arg_ptn = %r!gcloud compute firewall-rules update #{fw1_name}\s+--allow icmp --source-ranges 0.0.0.0 --target-tags trmq\s+--format json\s+--project #{project}!
-        expect(Milc::Gcloud.backend).to receive(:execute).with(update_arg_ptn)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(update_arg_ptn, ope_options)
         subject.create(fw1_name, allow: "icmp", source_ranges: "0.0.0.0", target_tags: "trmq")
       end
     end
@@ -84,24 +86,24 @@ describe Milc::Gcloud::Compute::FirewallRules do
     describe :update do
       let(:create_arg_ptn){ %r!gcloud compute firewall-rules create #{fw1_name}\s+--allow tcp:5672 --source-ranges 0.0.0.0 --target-tags trmq\s+--format json\s+--project #{project}! }
       it "when not created yet" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules update/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/, ope_options)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules update/, ope_options)
         expect{
           subject.update(fw1_name, allow: "tcp:5672", source_ranges: "0.0.0.0", target_tags: "trmq")
         }.to raise_error(/not found.+#{fw1_name}/)
       end
       it "when already created and not updated" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([fw1_res].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules update/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([fw1_res].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules update/, ope_options)
         subject.update(fw1_name, allow: "tcp:5672", source_ranges: "0.0.0.0", target_tags: "trmq")
       end
       let(:update_arg_ptn){ %r!gcloud compute firewall-rules update #{fw1_name}\s+--allow tcp:5672 --source-ranges 0.0.0.0 --target-tags trmq\s+--format json\s+--project #{project}! }
       it "when already created but updated" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).
                                          and_return([fw1_res.merge("sourceRanges" => "10.0.0.0/8")].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/)
-        expect(Milc::Gcloud.backend).to receive(:execute).with(update_arg_ptn)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules create/, ope_options)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(update_arg_ptn, ope_options)
         subject.update(fw1_name, allow: "tcp:5672", source_ranges: "0.0.0.0", target_tags: "trmq")
       end
     end
@@ -109,13 +111,13 @@ describe Milc::Gcloud::Compute::FirewallRules do
     describe :delete do
       let(:delete_arg_ptn){ %r!gcloud compute firewall-rules delete #{fw1_name}\s+--format json\s+--project #{project}! }
       it "when not created yet" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([].to_json)
-        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules delete/)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to_not receive(:execute).with(/gcloud compute firewall-rules delete/, ope_options)
         subject.delete(fw1_name)
       end
       it "when already created" do
-        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn).and_return([fw1_res].to_json)
-        expect(Milc::Gcloud.backend).to receive(:execute).with(delete_arg_ptn).and_return([].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([fw1_res].to_json)
+        expect(Milc::Gcloud.backend).to receive(:execute).with(delete_arg_ptn, ope_options).and_return([].to_json)
         subject.delete(fw1_name)
       end
     end
