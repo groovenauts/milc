@@ -14,6 +14,7 @@ describe Milc::Base do
 
   class MgcloudSample # 冪等サポートあり
     include Milc::Base
+    include Milc::Dsl::Mgcloud
     def process
       mgcloud "compute networks create #{NETWORK}", range: "\"10.0.0.0/8\""
     end
@@ -21,6 +22,7 @@ describe Milc::Base do
 
   class GcloudSample # 冪等サポートなし
     include Milc::Base
+    include Milc::Dsl::Gcloud
     def process
       gcloud "compute networks create #{NETWORK} --range \"10.0.0.0/8\""
     end
@@ -28,6 +30,7 @@ describe Milc::Base do
 
   class JsonGcloudSample # 冪等サポートなしJSON形式
     include Milc::Base
+    include Milc::Dsl::Gcloud
     def process
       json_gcloud "compute networks create #{NETWORK} --range \"10.0.0.0/8\""
     end
@@ -35,6 +38,7 @@ describe Milc::Base do
 
   class AnsibleSample
     include Milc::Base
+    include Milc::Dsl::Ansible
     def process
       ansible_playbook "-i inventory_filename config.yml"
     end
@@ -55,7 +59,7 @@ describe Milc::Base do
   end
 
   describe :help do
-    subject{ MgcloudSample.new }
+    subject{ Milc::Command.new(MgcloudSample.new) }
     it do
       expect($stderr).to receive(:puts).with("Usage: #{File.basename($0)} -c CONF_FILE")
       expect(subject).to receive(:exit).with(1).and_raise("exit 1")
@@ -89,7 +93,7 @@ describe Milc::Base do
 
   describe :mgcloud do
     let(:find_arg_ptn) { %r!gcloud compute networks list #{network1_name}\s+--format json\s+--project #{project}! }
-    subject{ MgcloudSample.new }
+    subject{ Milc::Command.new(MgcloudSample.new) }
     let(:create_arg_ptn){ %r!gcloud compute networks create #{network1_name}\s+--range \"10.0.0.0\/8\"\s+--format json\s+--project #{project}! }
     it "when not created yet" do
       expect(LoggerPipe).to receive(:run).with(Milc.logger, find_arg_ptn  , query_options.merge(dry_run: be_falsey)).and_return([].to_json)
@@ -104,7 +108,7 @@ describe Milc::Base do
   end
 
   describe :gcloud do
-    subject{ GcloudSample.new }
+    subject{ Milc::Command.new(GcloudSample.new) }
     let(:create_arg_ptn){ %r!gcloud compute networks create #{network1_name}\s+--range \"10.0.0.0\/8\"\s+--project #{project}! }
     it do
       expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn, ope_options.merge(dry_run: be_falsey))
@@ -113,7 +117,7 @@ describe Milc::Base do
   end
 
   describe :json_gcloud do
-    subject{ JsonGcloudSample.new }
+    subject{ Milc::Command.new(JsonGcloudSample.new) }
     let(:create_arg_ptn){ %r!gcloud compute networks create #{network1_name}\s+--range \"10.0.0.0\/8\"\s+--format json\s+--project #{project}! }
     it do
       expect(LoggerPipe).to receive(:run).with(Milc.logger, create_arg_ptn, query_options.merge(dry_run: be_falsey))
@@ -122,7 +126,7 @@ describe Milc::Base do
   end
 
   describe :ansible_playbook do
-    subject{ AnsibleSample.new }
+    subject{ Milc::Command.new(AnsibleSample.new) }
     it do
       expect(LoggerPipe).to receive(:run).with(Milc.logger, /ansible-playbook -i inventory_filename config.yml/, ope_options.merge(dry_run: be_falsey))
       subject.run(["-c", CONFIG_PATH])
