@@ -3,10 +3,11 @@ require "milc/version"
 require 'logger'
 
 module Milc
-  autoload :Base, 'milc/base'
-  autoload :Dsl , 'milc/dsl'
+  autoload :Base   , 'milc/base'
+  autoload :Dsl    , 'milc/dsl'
+  autoload :Gcloud , 'milc/gcloud'
 
-  autoload :Gcloud, 'milc/gcloud'
+  autoload :Command, 'milc/command'
 
   class << self
     attr_accessor :dry_run
