@@ -16,10 +16,6 @@ end
 
 module Milc
   module Base
-    include Milc::Dsl::Gcloud
-    include Milc::Dsl::Mgcloud
-
-    include Milc::Dsl::Ansible
 
     def logger
       Milc.logger
