@@ -1,5 +1,7 @@
 require "milc/dsl"
 
+require 'json'
+
 module Milc::Dsl
   module Gcloud
 
