@@ -131,6 +131,19 @@ describe Milc::Base do
       expect(LoggerPipe).to receive(:run).with(Milc.logger, /ansible-playbook -i inventory_filename config.yml/, ope_options.merge(dry_run: be_falsey))
       subject.run(["-c", CONFIG_PATH])
     end
+
+    let(:buf){ %W[foo\r bar\r baz\r] }
+    it "outputs stdout and stderr" do
+      require 'logger_pipe/runner'
+      expect(LoggerPipe).to receive(:run).
+                             with(Milc.logger, /ansible-playbook -i inventory_filename config.yml/, ope_options.merge(dry_run: be_falsey)).
+                             and_raise(LoggerPipe::Failure.new("Error!", buf))
+      expect($stderr).to receive(:puts).with(buf.join)
+      expect($stderr).to receive(:puts).with(/\[LoggerPipe::Failure\] Error\!/)
+      expect{
+        subject.run(["-c", CONFIG_PATH])
+      }.to raise_error(LoggerPipe::Failure)
+    end
   end
 
 end
