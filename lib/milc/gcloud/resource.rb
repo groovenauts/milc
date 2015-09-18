@@ -64,7 +64,7 @@ module Milc
       end
 
       def build_sub_attr_args(attrs)
-        attrs.map{|k,v| "#{k.to_s.gsub(/\_/, '-')}=#{v}" }.join(" ")
+        attrs.map{|k,v| "#{k.to_s.gsub(/\_/, '-')}=#{v}" }.join(",")
       end
 
       def call_action(action, cmd_args, attrs = nil, &block)
