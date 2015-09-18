@@ -108,14 +108,17 @@ describe "compute instances" do
           {name: "#{env_name}-trdb01"     , device_name: "#{env_name}-trdb01"     , mode: "rw", boot: "yes"},
           {name: "data-#{env_name}-trdb01", device_name: "data-#{env_name}-trdb01", mode: "rw", boot: "no" },
         ],
-        zone: "asia-east1-c", machine_type: "n1-standard-4", scopes: "bigquery",
-        network: "network-#{env_name}", tags: "trdb #{env_name}"
+        zone: "asia-east1-c",
+        machine_type: "n1-standard-4",
+        scopes: "bigquery",
+        network: "network-#{env_name}",
+        tags: "trdb,#{env_name}"
       }
     end
 
     describe :create do
-      # gcloud compute instances create #{env_name}-trdb01 --disk name=#{env_name}-trdb01 device-name=#{env_name}-trdb01 mode=rw boot=yes --disk name=data-#{env_name}-trdb01,device-name=data-#{env_name}-trdb01,mode=rw,boot=no --zone asia-east1-c --machine-type n1-standard-4 --scopes bigquery --network network-#{env_name} --tags trdb #{env_name}  --format json --project #{project}
-      let(:create_arg_ptn){ %r!gcloud compute instances create #{vm1_name}\s+--disk name=#{env_name}-trdb01,device-name=#{env_name}-trdb01,mode=rw,boot=yes --disk name=data-#{env_name}-trdb01,device-name=data-#{env_name}-trdb01,mode=rw,boot=no --zone asia-east1-c --machine-type n1-standard-4 --scopes bigquery --network network-#{env_name} --tags trdb #{env_name}\s+--format json\s+--project #{project}! }
+      # gcloud compute instances create #{env_name}-trdb01 --disk name=#{env_name}-trdb01 device-name=#{env_name}-trdb01 mode=rw boot=yes --disk name=data-#{env_name}-trdb01,device-name=data-#{env_name}-trdb01,mode=rw,boot=no --zone asia-east1-c --machine-type n1-standard-4 --scopes bigquery --network network-#{env_name} --tags trdb,#{env_name}  --format json --project #{project}
+      let(:create_arg_ptn){ %r!gcloud compute instances create #{vm1_name}\s+--disk name=#{env_name}-trdb01,device-name=#{env_name}-trdb01,mode=rw,boot=yes --disk name=data-#{env_name}-trdb01,device-name=data-#{env_name}-trdb01,mode=rw,boot=no --zone asia-east1-c --machine-type n1-standard-4 --scopes bigquery --network network-#{env_name} --tags trdb,#{env_name}\s+--format json\s+--project #{project}! }
       it "when not created yet" do
         expect(Milc::Gcloud.backend).to receive(:execute).with(find_arg_ptn, query_options).and_return([].to_json)
         expect(Milc::Gcloud.backend).to receive(:execute).with(create_arg_ptn, ope_options).and_return([].to_json)
