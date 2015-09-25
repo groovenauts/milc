@@ -1,3 +1,3 @@
 module Milc
-  VERSION = "0.2.2dev"
+  VERSION = "0.2.2"
 end
